@@ -5,66 +5,109 @@ const getSuccessResponse = require("../responseBuilder/successResponse");
 const failerResponse = require("../responseBuilder/failerResponse");
 const Exists = require("../customFunctions/Exists");
 
-exports.createNewProduct = async(req, res) => {
+exports.createNewProduct = async (req, res, next) => {
+  try {
     const product = await req.body;
     const doesExist = await Exists(req.body.product_name);
-    const isCategoryValid = await Category.findOne({where:{id:req.body.categoryId}});
+    const isCategoryValid = await Category.findOne({
+      where: { category_Id: req.body.category_Id },
+    });
 
-    if(doesExist){
-        return res.status(400).json(failerResponse("Product Already Exists !"))
-    } 
-    if(!isCategoryValid){
-        return res.status(400).json(failerResponse("Invalid Category Id !"));
+    if (doesExist) {
+      return res.status(400).json(failerResponse("Product Already Exists !"));
+    }
+    if (!isCategoryValid) {
+      return res.status(400).json(failerResponse("Invalid Category Id !"));
     }
 
     const result = await Product.create(product);
 
-    res.status(201).json(getSuccessResponse("product created successfully !",result));
-}
+    res
+      .status(201)
+      .json(getSuccessResponse("product created successfully !", result));
+  } catch (err) {
+    next(err);
+  }
+};
 
-exports.getAllProducts = async(req, res) => {
+exports.getAllProducts = async (req, res, next) => {
+  try {
     const allproducts = await Product.findAll();
 
-    res.status(200).json(getSuccessResponse("All Products Retrieved successfully !",allproducts));
-}
+    res
+      .status(200)
+      .json(
+        getSuccessResponse("All Products Retrieved successfully !", allproducts)
+      );
+  } catch (err) {
+    next(err);
+  }
+};
 
-exports.getASingleProduct = async(req, res) =>{
-    // console.log(req.params.id);
-    const product = await Product.findOne({where: {product_Id:req.params.id}});
-    // console.log(product);
-    return (!product)?(
-        res.status(404).json(failerResponse("Product Not Found !"))
-    ):(
-    res.status(200).json(getSuccessResponse("Product retrieved successfully !",product))
-    )
+exports.getASingleProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findOne({
+      where: { product_Id: req.params.id },
+    });
+    return !product
+      ? res.status(404).json(failerResponse("Product Not Found !"))
+      : res
+          .status(200)
+          .json(
+            getSuccessResponse("Product retrieved successfully !", product)
+          );
+  } catch (err) {
+    next(err);
+  }
+};
 
-}
-
-exports.updateProduct = async(req, res) => {
+exports.updateProduct = async (req, res, next) => {
+  try {
     const newProduct = await req.body;
-    const doesExist = await Product.findOne({where:{product_Id:req.params.id}});
-    if(!doesExist){
-        return res.status(404).json(failerResponse("Product Not Found !"));
+    const doesExist = await Product.findOne({
+      where: { product_Id: req.params.id },
+    });
+    if (!doesExist) {
+      return res.status(404).json(failerResponse("Product Not Found !"));
     }
-    const isCategoryValid = await Category.findOne({where:{id:req.body.categoryId}});
-    if(!isCategoryValid){
-        return res.status(400).json(failerResponse("Invalid Category Id !"));
+    const isCategoryValid = await Category.findOne({
+      where: { category_Id: req.body.category_Id },
+    });
+    if (!isCategoryValid) {
+      return res.status(400).json(failerResponse("Invalid Category Id !"));
     }
-    const updatedProduct = await Product.update(newProduct,{where: {product_Id:req.params.id}});
-   if(updatedProduct){ 
-    const response = getSuccessResponse("Product updated successfully !",newProduct);
-    res.status(200).json(response);   
- }
-}
+    const updatedProduct = await Product.update(newProduct, {
+      where: { product_Id: req.params.id },
+    });
+    if (updatedProduct) {
+      const response = getSuccessResponse(
+        "Product updated successfully !",
+        newProduct
+      );
+      res.status(200).json(response);
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 
-exports.deleteProduct = async(req, res) => {
-    const product = await Product.findOne({ where: { product_Id: req.params.id }});
-    if(!product){
-        return res.status(404).json(failerResponse("Product Not Found !"));
+exports.deleteProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findOne({
+      where: { product_Id: req.params.id },
+    });
+    if (!product) {
+      return res.status(404).json(failerResponse("Product Not Found !"));
     }
-    const deletedProduct = await Product.destroy({where:{product_Id:req.params.id}});
-    if(deletedProduct){
-        return res.status(200).json(getSuccessResponse("Product deleted successfully !",product))
+    const deletedProduct = await Product.destroy({
+      where: { product_Id: req.params.id },
+    });
+    if (deletedProduct) {
+      return res
+        .status(200)
+        .json(getSuccessResponse("Product deleted successfully !", product));
     }
-
-}
+  } catch (err) {
+    next(err);
+  }
+};

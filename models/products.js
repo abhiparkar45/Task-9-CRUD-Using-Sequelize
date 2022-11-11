@@ -9,16 +9,21 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      products.belongsTo(models.categories, {
+        foreignKey: "category_Id",
+        onDelete: "cascade",
+        onUpdate: "cascade",
+      });
     }
   }
   products.init(
     {
-      product_Id:{
-        type:DataTypes.INTEGER,
-        allowNull:false,
+      product_Id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
         primaryKey: true,
-        autoIncrement:true
-    },
+        autoIncrement: true,
+      },
       product_name: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -29,16 +34,16 @@ module.exports = (sequelize, DataTypes) => {
       },
       product_description: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: false,
       },
-      categoryId: {
+      category_Id: {
         type: DataTypes.INTEGER,
-        allowNull: false
-      }
+      },
     },
     {
       sequelize,
       modelName: "products",
+      tableName: "product",
     }
   );
   return products;
