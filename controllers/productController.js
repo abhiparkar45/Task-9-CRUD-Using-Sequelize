@@ -8,7 +8,10 @@ const Exists = require("../customFunctions/Exists");
 exports.createNewProduct = async (req, res, next) => {
   try {
     const product = await req.body;
-    const doesExist = await Exists(req.body.product_name);
+    const doesExist = await Exists({
+      name: "ProductName",
+      value: req.body.product_name,
+    });
     const isCategoryValid = await Category.findOne({
       where: { category_Id: req.body.category_Id },
     });
@@ -48,6 +51,9 @@ exports.getASingleProduct = async (req, res, next) => {
   try {
     const product = await Product.findOne({
       where: { product_Id: req.params.id },
+      include: {
+        model: Category,
+      },
     });
     return !product
       ? res.status(404).json(failerResponse("Product Not Found !"))

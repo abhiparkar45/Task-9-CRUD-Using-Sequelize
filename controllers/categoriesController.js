@@ -1,13 +1,16 @@
 const db = require("../models/index");
 const Category = db.categories;
+const Product = db.products;
 const successResponse = require("../responseBuilder/successResponse");
 const failerResponse = require("../responseBuilder/failerResponse");
+const Exists = require("../customFunctions/Exists");
 
 exports.createCategory = async (req, res, next) => {
   try {
     const category = await req.body;
-    const exist = await Category.findOne({
-      where: { categoryName: category.categoryName },
+    const exist = await Exists({
+      name: "CategoryName",
+      value: category.categoryName,
     });
     if (exist) {
       return res.status(400).json(failerResponse("Category Already Exists !"));
@@ -27,6 +30,11 @@ exports.getASingleCategory = async (req, res, next) => {
   try {
     const category = await Category.findOne({
       where: { category_Id: req.params.id },
+      include: [
+        {
+          model: Product,
+        },
+      ],
     });
     if (!category) {
       return res.status(404).json(failerResponse("Category does not exists !"));
@@ -55,9 +63,11 @@ exports.getAllCategories = async (req, res, next) => {
 exports.updateCategory = async (req, res, next) => {
   try {
     const newCategory = await req.body;
-    const exist = await Category.findOne({
-      where: { category_Id: req.params.id },
-    });
+    const categoryID = await req.params.id;
+    const exist = await Exists({ name: "CategoryID", value: categoryID });
+    // const exist = await Category.findOne({
+    //   where: { category_Id: req.params.id },
+    // });
     if (!exist) {
       return res.status(404).json(failerResponse("Category not found !"));
     }
@@ -83,10 +93,12 @@ exports.updateCategory = async (req, res, next) => {
 
 exports.deleteCategory = async (req, res, next) => {
   try {
-    const category = await Category.findOne({
-      where: { category_Id: req.params.id },
-    });
-    if (!category) {
+    const categoryID = await req.params.id;
+    const exist = await Exists({ name: "CategoryID", value: categoryID });
+    // const category = await Category.findOne({
+    //   where: { category_Id: req.params.id },
+    // });
+    if (!exist) {
       return res.status(404).json(failerResponse("Category Not Found !"));
     }
     const deletedCategory = await Category.destroy({
@@ -95,7 +107,7 @@ exports.deleteCategory = async (req, res, next) => {
     if (deletedCategory) {
       res
         .status(200)
-        .json(successResponse("Category deleted successfully !", category));
+        .json(successResponse("Category deleted successfully !", exist));
     }
   } catch (err) {
     next(err);
